@@ -1,59 +1,28 @@
-# Mutual Fund FAQ Assistant - Dependencies
-# Core dependencies for all phases
+# =========================================================================
+# Groww Mutual Fund RAG Chatbot — Streamlit Cloud Requirements
+# Only includes packages needed for the SERVING path (chatbot UI).
+# For the full ingestion pipeline (torch, sentence-transformers, playwright),
+# see requirements_full.txt
+# =========================================================================
 
-# HTTP Client and Async Support
+# Streamlit UI
+streamlit>=1.32.0
+
+# HTTP Client (Groq API calls)
 httpx==0.27.0
-
-# Web Scraping and HTML Parsing
-beautifulsoup4>=4.12.2
-lxml>=4.9.4
-trafilatura>=1.6.4
-
-# Playwright for JavaScript-heavy content fallback
-playwright==1.41.1
 
 # YAML Configuration
 PyYAML==6.0.1
 
-# Text Processing and Embeddings
-sentence-transformers==2.2.2
-torch==2.1.2
-transformers==4.36.2
+# Data Processing
+numpy>=1.24.0
+pandas>=2.1.0
 
-# Vector Search
-faiss-cpu==1.7.4
-
-# BM25 Search
+# BM25 Sparse Search (lightweight, pure Python)
 rank-bm25==0.2.2
 
-# FastAPI Backend
-fastapi==0.104.1
-uvicorn==0.24.0
-
-# Streamlit Frontend (for Streamlit Cloud deployment)
-streamlit>=1.32.0
-
-# Groq LLM Support (Phase 3 generation)
-groq==0.4.1
-
-# Data Processing
-pandas==2.1.4
-numpy==1.24.3
-
-# Logging and Monitoring
+# Logging
 structlog==23.2.0
 
 # Environment variable management
 python-dotenv>=1.0.0
-
-# Development and Testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
-black==23.11.0
-flake8==6.1.0
-
-# Optional: OpenAI Embeddings (alternative to sentence-transformers)
-# openai==1.3.8
-
-# Optional: ChromaDB (alternative to FAISS)
-# chromadb==0.4.18

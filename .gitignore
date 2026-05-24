@@ -29,7 +29,7 @@ data/index/*.pkl
 data/index/*.parquet
 src/data/index/*.faiss
 src/data/index/sparse_index.pkl
-src/data/index/embeddings.json
+# NOTE: embeddings.json is NOT ignored — it is required for Streamlit Cloud deployment
 
 # --------------- Log files ---------------
 *.log
