@@ -1,0 +1,9 @@
+{
+  "dense_index_type": "mock",
+  "sparse_index_type": "bm25",
+  "total_chunks": 688,
+  "embedding_dimension": 384,
+  "created_at": "2026-05-22T20:57:34.727476+00:00",
+  "faiss_available": false,
+  "bm25_available": true
+}

@@ -1,0 +1,67 @@
+# Sources Configuration - HDFC Mutual Fund Schemes
+# This file contains the EXCLUSIVE corpus for the Mutual Fund FAQ Assistant
+# ONLY these 5 URLs are allowed to be ingested, processed, or cited
+
+schemes:
+  - id: hdfc_mid_cap
+    name: HDFC Mid Cap Fund - Direct Growth
+    category: Mid Cap
+    sources:
+      - url: https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth
+        doc_type: Product_Page
+        last_updated: null
+        content_hash: null
+
+  - id: hdfc_equity
+    name: HDFC Equity Fund - Direct Growth
+    category: Flexi Cap
+    sources:
+      - url: https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth
+        doc_type: Product_Page
+        last_updated: null
+        content_hash: null
+
+  - id: hdfc_focused
+    name: HDFC Focused Fund - Direct Growth
+    category: Focused
+    sources:
+      - url: https://groww.in/mutual-funds/hdfc-focused-fund-direct-growth
+        doc_type: Product_Page
+        last_updated: null
+        content_hash: null
+
+  - id: hdfc_elss
+    name: HDFC ELSS Tax Saver - Direct Plan Growth
+    category: ELSS
+    sources:
+      - url: https://groww.in/mutual-funds/hdfc-elss-tax-saver-fund-direct-plan-growth
+        doc_type: Product_Page
+        last_updated: null
+        content_hash: null
+
+  - id: hdfc_large_cap
+    name: HDFC Large Cap Fund - Direct Growth
+    category: Large Cap
+    sources:
+      - url: https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth
+        doc_type: Product_Page
+        last_updated: null
+        content_hash: null
+
+# Governance Rules
+# Hard rule: any URL not present in this file MUST NOT appear in any answer.
+# CI compliance gate (Phase 5) fails the build if a generated answer cites a URL
+# outside this list.
+
+# Citation rule (enforced by Phase 3 post-processor):
+# The cited URL must be exactly one of the 5 URLs above (string-equal match against sources.yaml).
+# If no chunk from these 5 URLs supports the query at the confidence threshold → respond 
+# "I don't have a verified answer for that. Please refer to the official scheme page: <best-matching scheme URL from the 5>."
+# For refusals of advisory/comparison/prediction queries → the "educational link" returned 
+# is the Groww scheme page most relevant to the query (or a generic one of the 5 if no scheme is detected). 
+# No off-corpus link (AMFI/SEBI/etc.) is ever returned.
+
+# Metadata
+version: "1.0"
+created_at: "2026-05-12T00:00:00Z"
+description: "Exclusive corpus configuration for HDFC Mutual Fund FAQ Assistant"

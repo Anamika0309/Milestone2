@@ -1,0 +1,78 @@
+# =========================================================================
+# Milestone2 - Groww Mutual Fund RAG Chatbot
+# =========================================================================
+
+# --------------- Environment variables (API keys) ---------------
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+
+# --------------- Python cache & compiled files ---------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# --------------- Local databases and indexes (large binaries) ---------------
+data/index/*.faiss
+data/index/*.pkl
+data/index/*.parquet
+src/data/index/*.faiss
+src/data/index/sparse_index.pkl
+src/data/index/embeddings.json
+
+# --------------- Log files ---------------
+*.log
+logs/
+
+# --------------- Specific debug/temp text files (NOT blanket *.txt) ---------------
+verbose_utf8.txt
+test_output.txt
+test_out.log
+test_err.log
+import_debug.py
+import_test.txt
+import_models.txt
+import_v.txt
+torch_test.txt
+datasets_v.txt
+utils_v.txt
+
+# --------------- Node.js / Vercel ---------------
+node_modules/
+.next/
+.vercel/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --------------- Streamlit ---------------
+.streamlit/secrets.toml
+
+# --------------- IDE & Editor ---------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.code-workspace
+
+# --------------- OS generated ---------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# --------------- Scratch / temp ---------------
+scratch/

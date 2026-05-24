@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Milestone2 – Project Explorer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --sidebar:   #161b22;
+      --border:    #21262d;
+      --accent:    #58a6ff;
+      --accent2:   #3fb950;
+      --accent3:   #f78166;
+      --accent4:   #e3b341;
+      --accent5:   #bc8cff;
+      --text:      #c9d1d9;
+      --text-dim:  #6e7681;
+      --hover:     #1f2937;
+      --selected:  #1c2d3f;
+      --tag-green: rgba(63,185,80,.15);
+      --tag-blue:  rgba(88,166,255,.15);
+      --tag-purple:rgba(188,140,255,.15);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      width: 320px;
+      min-width: 220px;
+      max-width: 420px;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      transition: width .25s ease;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 16px 14px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .project-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #58a6ff, #bc8cff);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .project-label {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .project-label h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .project-label span {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .toggle-btn {
+      background: none; border: none;
+      color: var(--text-dim); cursor: pointer;
+      padding: 4px; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, color .15s;
+    }
+    .toggle-btn:hover { background: var(--hover); color: var(--text); }
+
+    .search-bar {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .search-bar input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+    }
+    .search-bar input:focus { border-color: var(--accent); }
+    .search-bar input::placeholder { color: var(--text-dim); }
+
+    .tree-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+    .tree-scroll::-webkit-scrollbar { width: 4px; }
+    .tree-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* ── TREE ITEMS ── */
+    .tree-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      cursor: pointer;
+      border-radius: 0;
+      transition: background .1s;
+      font-size: 12.5px;
+      white-space: nowrap;
+      overflow: hidden;
+      position: relative;
+      user-select: none;
+    }
+    .tree-item:hover { background: var(--hover); }
+    .tree-item.active { background: var(--selected); }
+    .tree-item.active::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--accent);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .tree-indent { display: inline-block; width: 16px; flex-shrink: 0; }
+    .tree-arrow {
+      width: 14px; height: 14px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-dim);
+      flex-shrink: 0;
+      transition: transform .18s;
+    }
+    .tree-arrow.open { transform: rotate(90deg); }
+    .tree-arrow svg { width: 10px; height: 10px; }
+
+    .tree-icon { font-size: 13px; flex-shrink: 0; }
+    .tree-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+    .tree-badge {
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 8px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    .badge-done  { background: var(--tag-green); color: var(--accent2); }
+    .badge-phase { background: var(--tag-blue);  color: var(--accent); }
+    .badge-gov   { background: var(--tag-purple); color: var(--accent5); }
+
+    .tree-children { display: none; }
+    .tree-children.open { display: block; }
+
+    /* ── MAIN PANEL ── */
+    #main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      height: 100vh;
+    }
+
+    .main-header {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .breadcrumb {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .breadcrumb span { color: var(--text); }
+
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 32px;
+    }
+    .main-content::-webkit-scrollbar { width: 6px; }
+    .main-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .welcome-card {
+      background: linear-gradient(135deg, rgba(88,166,255,.08), rgba(188,140,255,.08));
+      border: 1px solid rgba(88,166,255,.2);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 28px;
+    }
+    .welcome-card h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .welcome-card p  { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+    .phases-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .phase-card {
+      background: var(--sidebar);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      transition: border-color .2s, transform .2s;
+      cursor: pointer;
+    }
+    .phase-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .phase-card-header {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
+    .phase-badge {
+      font-size: 11px; font-weight: 600;
+      padding: 3px 8px; border-radius: 6px;
+    }
+    .p0 .phase-badge { background: var(--tag-purple); color: var(--accent5); }
+    .p1 .phase-badge { background: var(--tag-blue);   color: var(--accent);  }
+    .p2 .phase-badge { background: var(--tag-green);  color: var(--accent2); }
+
+    .phase-card h3 { font-size: 14px; font-weight: 600; flex: 1; }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent2);
+      box-shadow: 0 0 6px var(--accent2);
+    }
+    .phase-desc { font-size: 12px; color: var(--text-dim); line-height: 1.6; margin-bottom: 14px; }
+    .file-list { display: flex; flex-direction: column; gap: 4px; }
+    .file-tag {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 8px;
+      background: var(--bg);
+      border-radius: 4px;
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .file-tag .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .dot-py   { background: #4b8bbe; }
+    .dot-yaml { background: var(--accent4); }
+    .dot-md   { background: #8bc34a; }
+    .dot-txt  { background: var(--text-dim); }
+    .dot-py2  { background: var(--accent5); }
+
+    .doc-section { margin-bottom: 28px; }
+    .doc-section h2 {
+      font-size: 14px; font-weight: 600;
+      color: var(--text-dim); text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .doc-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .doc-card {
+      background: var(--sidebar);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: border-color .15s;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .doc-card:hover { border-color: var(--accent4); }
+    .doc-card .icon { font-size: 20px; }
+    .doc-card h4 { font-size: 13px; font-weight: 500; }
+    .doc-card span { font-size: 11px; color: var(--text-dim); }
+
+    .test-section { margin-bottom: 28px; }
+    .test-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--tag-green); color: var(--accent2);
+      font-size: 12px; font-weight: 600;
+      padding: 6px 12px; border-radius: 20px;
+      margin-bottom: 12px;
+    }
+    .test-badge::before { content: '✓ '; }
+    .tests-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .test-card {
+      background: var(--sidebar);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+    }
+    .test-card .name { color: var(--accent); margin-bottom: 4px; }
+    .test-card .result { color: var(--accent2); }
+
+    /* ── RESIZE HANDLE ── */
+    #resize-handle {
+      width: 4px;
+      cursor: col-resize;
+      background: transparent;
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      transition: background .15s;
+    }
+    #resize-handle:hover { background: var(--accent); opacity: .5; }
+
+    /* ── COLLAPSED SIDEBAR ── */
+    #sidebar.collapsed { width: 48px; }
+    #sidebar.collapsed .sidebar-header > *:not(.toggle-btn) { display: none; }
+    #sidebar.collapsed .search-bar { display: none; }
+    #sidebar.collapsed .tree-name, #sidebar.collapsed .tree-badge,
+    #sidebar.collapsed .tree-arrow { display: none; }
+    #sidebar.collapsed .tree-indent { width: 4px; }
+
+    /* scrollbar */
+    body::-webkit-scrollbar { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-header">
+    <div class="project-icon">📁</div>
+    <div class="project-label">
+      <h2>Milestone2</h2>
+      <span>Mutual Fund FAQ Assistant</span>
+    </div>
+    <button class="toggle-btn" id="collapseBtn" title="Toggle sidebar">
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+        <path d="M3 4h10v1.5H3zm0 3h10v1.5H3zm0 3h10v1.5H3z"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="🔍  Search files…" />
+  </div>
+
+  <div class="tree-scroll" id="treeRoot"></div>
+  <div id="resize-handle"></div>
+</div>
+
+<!-- MAIN PANEL -->
+<div id="main">
+  <div class="main-header">
+    <span class="breadcrumb">Milestone2 / <span id="breadcrumbPath">Overview</span></span>
+  </div>
+
+  <div class="main-content">
+    <div class="welcome-card">
+      <h1>📚 Mutual Fund FAQ Assistant</h1>
+      <p>A facts-only RAG-based assistant for 5 HDFC mutual fund schemes on Groww.
+         The system is implemented phase-wise through Phase 0 (Governance),
+         Phase 1 (Ingestion), and Phase 2 (Retrieval). Use the sidebar to navigate all files.</p>
+    </div>
+
+    <!-- PHASES GRID -->
+    <div class="doc-section">
+      <h2>Phase-wise Implementation</h2>
+    </div>
+    <div class="phases-grid">
+
+      <div class="phase-card p0">
+        <div class="phase-card-header">
+          <span class="phase-badge">Phase 0</span>
+          <h3>Governance</h3>
+          <div class="status-dot"></div>
+        </div>
+        <p class="phase-desc">Locks down the 5 whitelisted Groww URLs, refusal intents, PII patterns, and the disclaimer.</p>
+        <div class="file-list">
+          <div class="file-tag"><span class="dot dot-yaml"></span>sources.yaml</div>
+          <div class="file-tag"><span class="dot dot-yaml"></span>refusal_intents.yaml</div>
+          <div class="file-tag"><span class="dot dot-yaml"></span>pii_patterns.yaml</div>
+          <div class="file-tag"><span class="dot dot-txt"></span>disclaimer.txt</div>
+          <div class="file-tag"><span class="dot dot-md"></span>README.md</div>
+        </div>
+      </div>
+
+      <div class="phase-card p1">
+        <div class="phase-card-header">
+          <span class="phase-badge">Phase 1</span>
+          <h3>Ingestion</h3>
+          <div class="status-dot"></div>
+        </div>
+        <p class="phase-desc">Crawls, extracts, cleans, chunks, embeds and indexes all 5 HDFC fund pages into FAISS + BM25.</p>
+        <div class="file-list">
+          <div class="file-tag"><span class="dot dot-py"></span>fetcher.py</div>
+          <div class="file-tag"><span class="dot dot-py"></span>extractor.py</div>
+          <div class="file-tag"><span class="dot dot-py"></span>cleaner.py</div>
+          <div class="file-tag"><span class="dot dot-py"></span>chunker.py</div>
+          <div class="file-tag"><span class="dot dot-py"></span>embedder.py</div>
+          <div class="file-tag"><span class="dot dot-py"></span>indexer.py</div>
+          <div class="file-tag"><span class="dot dot-md"></span>README.md</div>
+        </div>
+      </div>
+
+      <div class="phase-card p2">
+        <div class="phase-card-header">
+          <span class="phase-badge">Phase 2</span>
+          <h3>Retrieval</h3>
+          <div class="status-dot"></div>
+        </div>
+        <p class="phase-desc">Normalises queries, resolves schemes, fuses dense+sparse search via RRF, reranks, and gates confidence.</p>
+        <div class="file-list">
+          <div class="file-tag"><span class="dot dot-py2"></span>query_normalizer.py</div>
+          <div class="file-tag"><span class="dot dot-py2"></span>scheme_resolver.py</div>
+          <div class="file-tag"><span class="dot dot-py2"></span>hybrid_retriever.py</div>
+          <div class="file-tag"><span class="dot dot-py2"></span>cross_encoder_reranker.py</div>
+          <div class="file-tag"><span class="dot dot-py2"></span>confidence_gate.py</div>
+          <div class="file-tag"><span class="dot dot-md"></span>README.md</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DOCS -->
+    <div class="doc-section">
+      <h2>Root Documents</h2>
+      <div class="doc-grid">
+        <div class="doc-card">
+          <div class="icon">📄</div>
+          <div>
+            <h4>Problem_Statement.md</h4>
+            <span>Scope, target users, constraints, PII rules</span>
+          </div>
+        </div>
+        <div class="doc-card">
+          <div class="icon">🏗️</div>
+          <div>
+            <h4>Architecture.md</h4>
+            <span>Phase-wise system design, data flow diagrams</span>
+          </div>
+        </div>
+        <div class="doc-card">
+          <div class="icon">📦</div>
+          <div>
+            <h4>requirements.txt</h4>
+            <span>All Python package dependencies</span>
+          </div>
+        </div>
+        <div class="doc-card">
+          <div class="icon">⚙️</div>
+          <div>
+            <h4>src/mf_faq/</h4>
+            <span>Main source package — config, ingestion, retrieval, utils</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTS -->
+    <div class="doc-section test-section">
+      <h2>Verification Tests</h2>
+      <div class="test-badge">All tests passing — 8 / 8</div>
+      <div class="tests-grid">
+        <div class="test-card">
+          <div class="name">test_phase2_simple.py</div>
+          <div class="result">✅ 4/4 passed</div>
+        </div>
+        <div class="test-card">
+          <div class="name">test_phase2_simple_v2.py</div>
+          <div class="result">✅ 4/4 passed</div>
+        </div>
+        <div class="test-card">
+          <div class="name">Query Normalizer</div>
+          <div class="result">✅ NFKC + expansions OK</div>
+        </div>
+        <div class="test-card">
+          <div class="name">Scheme Resolver</div>
+          <div class="result">✅ 5 schemes loaded</div>
+        </div>
+        <div class="test-card">
+          <div class="name">Hybrid Retriever</div>
+          <div class="result">✅ RRF fusion OK (mock)</div>
+        </div>
+        <div class="test-card">
+          <div class="name">Confidence Gate</div>
+          <div class="result">✅ τ=0.7 gate OK</div>
+        </div>
+        <div class="test-card">
+          <div class="name">Cross-Encoder</div>
+          <div class="result">✅ Mock fallback OK</div>
+        </div>
+        <div class="test-card">
+          <div class="name">Indexer</div>
+          <div class="result">✅ Mock FAISS + BM25</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── TREE DATA ──
+const TREE = [
+  { name:'📄  Architecture.md',       icon:'', badge:'doc',   indent:0 },
+  { name:'📄  Problem_Statement.md',  icon:'', badge:'doc',   indent:0 },
+  { name:'📦  requirements.txt',      icon:'', badge:'',      indent:0 },
+  { id:'phases', name:'📂  phases/',  icon:'', badge:'',      indent:0, children:[
+    { id:'phase_0', name:'📁  phase_0/',  indent:1, badge:'Phase 0', children:[
+      { name:'⚙️  sources.yaml',         indent:2 },
+      { name:'🚫  refusal_intents.yaml', indent:2 },
+      { name:'🔐  pii_patterns.yaml',    indent:2 },
+      { name:'📝  disclaimer.txt',       indent:2 },
+      { name:'📖  README.md',            indent:2 },
+    ]},
+    { id:'phase_1', name:'📁  phase_1/', indent:1, badge:'Phase 1', children:[
+      { name:'🐍  fetcher.py',           indent:2 },
+      { name:'🐍  extractor.py',         indent:2 },
+      { name:'🐍  cleaner.py',           indent:2 },
+      { name:'🐍  chunker.py',           indent:2 },
+      { name:'🐍  embedder.py',          indent:2 },
+      { name:'🐍  indexer.py',           indent:2 },
+      { name:'📖  README.md',            indent:2 },
+    ]},
+    { id:'phase_2', name:'📁  phase_2/', indent:1, badge:'Phase 2', children:[
+      { name:'🐍  query_normalizer.py',       indent:2 },
+      { name:'🐍  scheme_resolver.py',        indent:2 },
+      { name:'🐍  hybrid_retriever.py',       indent:2 },
+      { name:'🐍  cross_encoder_reranker.py', indent:2 },
+      { name:'🐍  confidence_gate.py',        indent:2 },
+      { name:'🐍  __init__.py',               indent:2 },
+      { name:'📖  README.md',                 indent:2 },
+    ]},
+  ]},
+  { id:'src', name:'📂  src/', indent:0, children:[
+    { id:'mf_faq', name:'📁  mf_faq/', indent:1, children:[
+      { id:'config', name:'📁  config/', indent:2, children:[
+        { name:'⚙️  sources.yaml',         indent:3 },
+        { name:'🚫  refusal_intents.yaml', indent:3 },
+        { name:'🔐  pii_patterns.yaml',    indent:3 },
+        { name:'📝  disclaimer.txt',       indent:3 },
+      ]},
+      { id:'ingestion', name:'📁  ingestion/', indent:2, children:[
+        { name:'🐍  fetcher.py',      indent:3 },
+        { name:'🐍  extractor.py',    indent:3 },
+        { name:'🐍  cleaner.py',      indent:3 },
+        { name:'🐍  chunker.py',      indent:3 },
+        { name:'🐍  embedder.py',     indent:3 },
+        { name:'🐍  indexer.py',      indent:3 },
+      ]},
+      { id:'retrieval', name:'📁  retrieval/', indent:2, children:[
+        { name:'🐍  query_normalizer.py',       indent:3 },
+        { name:'🐍  scheme_resolver.py',        indent:3 },
+        { name:'🐍  hybrid_retriever.py',       indent:3 },
+        { name:'🐍  cross_encoder_reranker.py', indent:3 },
+        { name:'🐍  confidence_gate.py',        indent:3 },
+      ]},
+      { id:'utils',     name:'📁  utils/',     indent:2, children:[
+        { name:'🐍  import_utils.py', indent:3 },
+      ]},
+      { id:'vector_db', name:'📁  vector_db/', indent:2, children:[
+        { name:'🐍  chroma_store.py', indent:3 },
+      ]},
+    ]},
+  ]},
+  { id:'docs', name:'📂  Docs/', indent:0, children:[
+    { name:'📖  Phase-wise-Architecture.md', indent:1 },
+    { name:'📖  Edge-Cases.md',              indent:1 },
+    { name:'📝  Problem statement',          indent:1 },
+  ]},
+  { name:'🧪  test_phase2_simple.py',    indent:0, badge:'test' },
+  { name:'🧪  test_phase2_simple_v2.py', indent:0, badge:'test' },
+  { name:'🧪  test_basic.py',            indent:0, badge:'test' },
+  { name:'🧪  test_phase2_retrieval.py', indent:0, badge:'test' },
+];
+
+const badgeClass = { 'Phase 0':'badge-gov', 'Phase 1':'badge-phase', 'Phase 2':'badge-done', 'doc':'', 'test':'' };
+
+function buildTree(items, container) {
+  items.forEach(item => {
+    const wrap = document.createElement('div');
+    wrap.className = 'tree-node';
+
+    const row = document.createElement('div');
+    row.className = 'tree-item';
+    row.dataset.name = item.name;
+
+    // indent
+    for(let i=0;i<item.indent;i++){
+      const sp = document.createElement('span');
+      sp.className='tree-indent';
+      // vertical guide
+      sp.style.cssText = 'border-left:1px solid #21262d;margin-left:7px;';
+      row.appendChild(sp);
+    }
+
+    // arrow
+    const arrow = document.createElement('span');
+    arrow.className='tree-arrow';
+    if(item.children && item.children.length){
+      arrow.innerHTML = `<svg viewBox="0 0 6 10" fill="currentColor"><path d="M1 1l4 4-4 4"/></svg>`;
+    }
+    row.appendChild(arrow);
+
+    // name
+    const name = document.createElement('span');
+    name.className='tree-name';
+    name.textContent = item.name;
+    row.appendChild(name);
+
+    // badge
+    if(item.badge && badgeClass[item.badge] !== undefined){
+      const badge = document.createElement('span');
+      badge.className='tree-badge ' + (badgeClass[item.badge]||'badge-phase');
+      badge.textContent = item.badge;
+      row.appendChild(badge);
+    }
+
+    wrap.appendChild(row);
+
+    if(item.children && item.children.length){
+      const children = document.createElement('div');
+      children.className = 'tree-children';
+      buildTree(item.children, children);
+      wrap.appendChild(children);
+
+      row.addEventListener('click', e=>{
+        e.stopPropagation();
+        const open = children.classList.toggle('open');
+        arrow.classList.toggle('open', open);
+        row.classList.toggle('active', open);
+        document.getElementById('breadcrumbPath').textContent = item.name.replace(/[📁📂🐍⚙️🚫🔐📝📖📄📦🧪]/gu,'').trim();
+      });
+    } else {
+      row.addEventListener('click', e=>{
+        e.stopPropagation();
+        document.querySelectorAll('.tree-item').forEach(r=>r.classList.remove('active'));
+        row.classList.add('active');
+        document.getElementById('breadcrumbPath').textContent = item.name.replace(/[📁📂🐍⚙️🚫🔐📝📖📄📦🧪]/gu,'').trim();
+      });
+    }
+
+    container.appendChild(wrap);
+  });
+}
+
+buildTree(TREE, document.getElementById('treeRoot'));
+
+// Auto-open phases + src
+['phases','phase_0','phase_1','phase_2'].forEach(id=>{
+  const node = document.querySelector(`.tree-node`);
+});
+
+// Open phases folder by default
+setTimeout(()=>{
+  document.querySelectorAll('.tree-item').forEach(row=>{
+    if(row.dataset.name && row.dataset.name.includes('phases')){
+      row.click();
+    }
+  });
+},100);
+
+// ── SEARCH ──
+document.getElementById('searchInput').addEventListener('input', function(){
+  const q = this.value.toLowerCase().trim();
+  document.querySelectorAll('.tree-item').forEach(row=>{
+    const nm = (row.dataset.name||'').toLowerCase();
+    if(!q){ row.style.display=''; return; }
+    row.style.display = nm.includes(q) ? '' : 'none';
+    if(nm.includes(q)){
+      // expand parents
+      let p = row.parentElement;
+      while(p && p.id !== 'treeRoot'){
+        if(p.classList.contains('tree-children')) p.classList.add('open');
+        if(p.previousElementSibling && p.previousElementSibling.querySelector('.tree-arrow'))
+          p.previousElementSibling.querySelector('.tree-arrow').classList.add('open');
+        p = p.parentElement;
+      }
+    }
+  });
+});
+
+// ── COLLAPSE TOGGLE ──
+document.getElementById('collapseBtn').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('collapsed');
+});
+
+// ── RESIZE ──
+const sidebar = document.getElementById('sidebar');
+const handle  = document.getElementById('resize-handle');
+let dragging = false, startX, startW;
+
+handle.addEventListener('mousedown', e=>{
+  dragging = true; startX = e.clientX; startW = sidebar.offsetWidth;
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+});
+document.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const w = Math.max(180, Math.min(500, startW + e.clientX - startX));
+  sidebar.style.width = w+'px';
+});
+document.addEventListener('mouseup', ()=>{ dragging=false; document.body.style.cursor=''; document.body.style.userSelect=''; });
+</script>
+</body>
+</html>

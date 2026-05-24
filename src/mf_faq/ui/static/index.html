@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GROWWW - HDFC Mutual Fund RAG Assistant</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/index.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Premium Navigation Header -->
+        <header class="app-header">
+            <div class="header-logo">
+                <span class="logo-brand">GROWWW</span>
+                <span class="logo-subtitle">Mutual Fund Hub</span>
+                <span class="badge-factual">Facts Only</span>
+            </div>
+            <div class="header-disclaimer">
+                <span class="disclaimer-icon">⚠️</span>
+                <span>Facts-only. No investment advice.</span>
+            </div>
+        </header>
+
+        <!-- Main Dashboard: Whitelisted Schemes (Grow Plans) Grid -->
+        <main class="dashboard-container">
+            <div class="dashboard-hero">
+                <h1>HDFC Mutual Fund Plans</h1>
+                <p>Explore official, whitelisted HDFC scheme details from our secure closed-corpus RAG registry. Click any plan to ask specific questions.</p>
+            </div>
+            
+            <div id="plansGrid" class="plans-grid">
+                <!-- Loaded dynamically via js -->
+                <div class="plan-card skeleton-card"></div>
+                <div class="plan-card skeleton-card"></div>
+                <div class="plan-card skeleton-card"></div>
+                <div class="plan-card skeleton-card"></div>
+                <div class="plan-card skeleton-card"></div>
+            </div>
+        </main>
+
+        <!-- Floating Chatbot Widget (Bottom Right) -->
+        <div id="chatbotWidget" class="chatbot-widget collapsed">
+            <!-- Chatbot Header -->
+            <div class="chatbot-header">
+                <div class="chatbot-status">
+                    <span class="status-indicator"></span>
+                    <div class="status-info">
+                        <h4>GROWWW AI Assistant</h4>
+                        <p id="systemModel">Engine: Llama 3.3 RAG</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button id="clearChatBtn" class="btn-icon" title="Clear Conversation">
+                        <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                    <button id="closeChatbotBtn" class="btn-icon" title="Minimize Chat">
+                        <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chatbot Conversation Thread -->
+            <div id="conversationFeed" class="conversation-feed">
+                <!-- Welcome message -->
+                <div class="message bubble-assistant">
+                    <div class="bubble-content">
+                        <p>Welcome! I am your <strong>GROWWW RAG Assistant</strong>. I can answer objective, factual questions about HDFC Mid Cap, Equity, Focused, ELSS, and Large Cap schemes.</p>
+                        <p class="safety-note">🛡️ <strong>Safety Active:</strong> Speculative advice or Indian PII (PAN/Aadhaar/phone/email) is automatically deflected.</p>
+                    </div>
+                    <div class="bubble-meta">
+                        <span>System Online</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contextual Sample Questions Pills -->
+            <div class="sample-pills-container">
+                <div id="samplePills" class="sample-pills-grid">
+                    <button class="sample-pill-btn" data-query="What is the exit load of HDFC Equity Fund?">Exit Load: Equity</button>
+                    <button class="sample-pill-btn" data-query="What is the expense ratio of HDFC Mid Cap Fund?">Expense: Mid Cap</button>
+                    <button class="sample-pill-btn" data-query="Is there a lock-in period for HDFC ELSS Tax Saver?">Lock-in: ELSS</button>
+                </div>
+            </div>
+
+            <!-- Chatbot Input Form -->
+            <div class="input-panel">
+                <div id="piiWarningToast" class="pii-warning-toast hidden">
+                    <span>⚠️ PII detected. Please redact PAN/Aadhaar details.</span>
+                </div>
+                <form id="queryForm" class="input-form">
+                    <input 
+                        type="text" 
+                        id="queryInput" 
+                        placeholder="Ask a factual question..." 
+                        autocomplete="off" 
+                        required
+                    >
+                    <button type="submit" id="submitBtn" class="btn-primary" aria-label="Send query">
+                        <svg class="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Floating Chatbot Toggle Button (Bottom Right) -->
+        <button id="chatbotToggleBtn" class="chatbot-toggle-btn" aria-label="Open Chatbot">
+            <span class="toggle-badge hidden">!</span>
+            <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+        </button>
+
+        <!-- Toast Notification Area -->
+        <div id="toastContainer" class="toast-container"></div>
+    </div>
+    
+    <script src="/static/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+[
+  {
+    "chunk_id": "test-chunk-1",
+    "scheme_id": "hdfc_equity",
+    "scheme_name": "HDFC Equity Fund - Direct Growth",
+    "source_url": "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth",
+    "section": "Exit Load",
+    "last_updated": "2026-05-12T00:00:00Z",
+    "content_hash": "sha256:test1",
+    "stable_content_hash": "sha256:stable1",
+    "text": "Exit load: 0% if redeemed after 1 year, 1% before 1 year",
+    "token_count": 45,
+    "chunk_order": 1
+  },
+  {
+    "chunk_id": "test-chunk-2",
+    "scheme_id": "hdfc_equity",
+    "scheme_name": "HDFC Equity Fund - Direct Growth",
+    "source_url": "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth",
+    "section": "Expense Ratio",
+    "last_updated": "2026-05-12T00:00:00Z",
+    "content_hash": "sha256:test2",
+    "stable_content_hash": "sha256:stable2",
+    "text": "Expense ratio: 1.02% per annum for direct plan",
+    "token_count": 38,
+    "chunk_order": 2
+  },
+  {
+    "chunk_id": "test-chunk-3",
+    "scheme_id": "hdfc_mid_cap",
+    "scheme_name": "HDFC Mid Cap Fund - Direct Growth",
+    "source_url": "https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth",
+    "section": "Minimum Investments",
+    "last_updated": "2026-05-12T00:00:00Z",
+    "content_hash": "sha256:test3",
+    "stable_content_hash": "sha256:stable3",
+    "text": "Minimum SIP amount: ₹500, Minimum lumpsum: ₹5000",
+    "token_count": 42,
+    "chunk_order": 3
+  }
+]

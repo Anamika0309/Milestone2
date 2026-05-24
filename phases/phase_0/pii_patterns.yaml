@@ -1,0 +1,205 @@
+# PII Detection and Redaction Patterns
+# This file defines patterns for detecting and redacting personally identifiable information
+# All detected PII should trigger immediate rejection with no URL response
+
+# PAN Card Patterns (India)
+pan_patterns:
+  - pattern: "[A-Z]{5}[0-9]{4}[A-Z]{1}"
+    description: "Standard PAN format (5 letters, 4 digits, 1 letter)"
+    case_sensitive: true
+    examples:
+      - "ABCDE1234F"
+      - "ABCDE1234F1"
+  - pattern: "[A-Z]{3}[A-Z]{1}[P][A-Z]{1}[0-9]{4}[A-Z]{1}"
+    description: "New PAN format with P indicator"
+    case_sensitive: true
+    examples:
+      - "ABCPE1234F"
+
+# Aadhaar Card Patterns (India)
+aadhaar_patterns:
+  - pattern: "[0-9]{12}"
+    description: "12-digit Aadhaar number"
+    case_sensitive: false
+    examples:
+      - "123456789012"
+  - pattern: "[0-9]{4}\\s?[0-9]{4}\\s?[0-9]{4}"
+    description: "Aadhaar with spaces"
+    case_sensitive: false
+    examples:
+      - "1234 5678 9012"
+
+# Email Patterns
+email_patterns:
+  - pattern: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+    description: "Standard email format"
+    case_sensitive: false
+    examples:
+      - "user@example.com"
+      - "user.name@domain.co.in"
+  - pattern: "[a-zA-Z0-9._%+-]+\\s*@\\s*[a-zA-Z0-9.-]+\\s*\\.\\s*[a-zA-Z]{2,}"
+    description: "Email with spaces"
+    case_sensitive: false
+    examples:
+      - "user @ example . com"
+
+# Phone Number Patterns (India)
+phone_patterns:
+  - pattern: "(\\+91[-\\s]?)?[6-9]\\d{9}"
+    description: "Indian mobile numbers with optional country code"
+    case_sensitive: false
+    examples:
+      - "+919876543210"
+      - "9876543210"
+      - "+91-9876543210"
+  - pattern: "(\\+91[-\\s]?)?0?[6-9]\\d{9}"
+    description: "Indian mobile with optional leading zero"
+    case_sensitive: false
+    examples:
+      - "+9109876543210"
+      - "09876543210"
+  - pattern: "[0-9]{3}\\s?[0-9]{4}\\s?[0-9]{4}"
+    description: "Landline numbers with spaces"
+    case_sensitive: false
+    examples:
+      - "080 1234 5678"
+      - "08012345678"
+
+# OTP Patterns
+otp_patterns:
+  - pattern: "(?:OTP|One Time Password|verification code|verify code)[:\\s]*[0-9]{4,8}"
+    description: "OTP with keyword and numbers"
+    case_sensitive: false
+    examples:
+      - "OTP: 123456"
+      - "Your verification code is 789012"
+      - "Verify code: 1234"
+
+# Account Number Patterns
+account_patterns:
+  - pattern: "[0-9]{8,20}"
+    description: "Generic account numbers (8-20 digits)"
+    context_patterns:
+      - "account"
+      - "acc"
+      - "a/c"
+      - "folio"
+      - "demat"
+    case_sensitive: false
+    examples:
+      - "account number: 1234567890"
+      - "folio: 123456"
+  - pattern: "[A-Z]{2}[0-9]{2}[A-Z]{4}[0-9]{7}"
+    description: "Indian bank account format"
+    case_sensitive: true
+    examples:
+      - "SBIN0001234567890"
+
+# Bank Card Patterns
+card_patterns:
+  - pattern: "[0-9]{16}"
+    description: "16-digit credit/debit card numbers"
+    context_patterns:
+      - "card"
+      - "debit"
+      - "credit"
+      - "atm"
+    case_sensitive: false
+    examples:
+      - "card: 1234567890123456"
+  - pattern: "[0-9]{4}\\s?[0-9]{4}\\s?[0-9]{4}\\s?[0-9]{4}"
+    description: "Card numbers with spaces"
+    case_sensitive: false
+    examples:
+      - "1234 5678 9012 3456"
+
+# Password Patterns
+password_patterns:
+  - pattern: "(?:password|pwd|pass)[:\\s*].{6,}"
+    description: "Password with keyword"
+    case_sensitive: false
+    examples:
+      - "password: secret123"
+      - "pwd: mypass"
+
+# Address Patterns
+address_patterns:
+  - pattern: "\\d+\\s*[A-Za-z\\s]+\\s*[A-Za-z\\s]*,\\s*[A-Za-z\\s]+"
+    description: "Street address format"
+    case_sensitive: false
+    examples:
+      - "123 Main Street, Mumbai"
+      - "456 Park Avenue, Delhi"
+
+# DOB Patterns
+dob_patterns:
+  - pattern: "(?:DOB|date of birth|born)[:\\s]*[0-9]{2}[/-][0-9]{2}[/-][0-9]{4}"
+    description: "Date of birth with keywords"
+    case_sensitive: false
+    examples:
+      - "DOB: 15/01/1990"
+      - "date of birth: 15-01-1990"
+
+# Redaction Rules
+redaction_rules:
+  # When PII detected, use these responses
+  pii_block_response: |
+    I cannot process requests containing personal information like PAN, Aadhaar, phone numbers, or email addresses.
+    For factual mutual fund information, please ask general questions without sharing personal details.
+    Facts-only. No investment advice.
+
+  # Redaction patterns for logging (never store raw PII)
+  log_redaction:
+    - pattern: "[A-Z]{5}[0-9]{4}[A-Z]{1}"
+      replacement: "[PAN_REDACTED]"
+    - pattern: "[0-9]{12}"
+      replacement: "[AADHAAR_REDACTED]"
+    - pattern: "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+      replacement: "[EMAIL_REDACTED]"
+    - pattern: "(\\+91[-\\s]?)?[6-9]\\d{9}"
+      replacement: "[PHONE_REDACTED]"
+
+# Detection Configuration
+detection_config:
+  # Minimum confidence threshold for PII detection
+  min_confidence: 0.8
+  
+  # Whether to block requests with PII immediately
+  block_on_detection: true
+  
+  # Whether to log PII detection events
+  log_detection_events: true
+  
+  # Context window for pattern matching (characters before/after)
+  context_window: 50
+
+# Testing Examples
+test_cases:
+  # Should be detected as PII
+  pii_positive:
+    - input: "My PAN is ABCDE1234F and email is user@example.com"
+      expected: true
+      type: "multiple_pii"
+    - input: "Call me at +919876543210"
+      expected: true
+      type: "phone"
+    - input: "Aadhaar: 123456789012"
+      expected: true
+      type: "aadhaar"
+
+  # Should NOT be detected as PII
+  pii_negative:
+    - input: "What is expense ratio?"
+      expected: false
+      type: "normal_query"
+    - input: "HDFC fund details"
+      expected: false
+      type: "normal_query"
+    - input: "12345678" # Generic numbers without context
+      expected: false
+      type: "generic_numbers"
+
+# Version and Metadata
+version: "1.0"
+created_at: "2026-05-12T00:00:00Z"
+description: "PII detection and redaction patterns for HDFC Mutual Fund FAQ Assistant"

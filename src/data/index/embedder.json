@@ -1,0 +1,12 @@
+{
+  "model_name": "mock-bge-small-en",
+  "model_version": "mock-1.0",
+  "embedding_dim": 384,
+  "max_seq_length": 512,
+  "normalized_embeddings": true,
+  "created_at": "2026-05-22T20:57:33.302709+00:00",
+  "total_chunks": 688,
+  "embedding_strategy": "scheme_name_prefix",
+  "note": "Mock implementation for testing Phase 1.5 structure",
+  "last_updated": "2026-05-22T20:57:34.082720+00:00"
+}

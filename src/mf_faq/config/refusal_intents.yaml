@@ -1,0 +1,152 @@
+# Refusal Intents Configuration
+# This file defines patterns and responses for non-factual queries
+# All refusals must include exactly ONE educational link from the 5 whitelisted URLs
+
+intents:
+  advisory:
+    description: "Queries seeking investment advice or recommendations"
+    patterns:
+      - "should I invest"
+      - "should I buy"
+      - "is it good to invest"
+      - "recommend"
+      - "advice"
+      - "suggestion"
+      - "which one should I choose"
+      - "is this a good investment"
+      - "should I put money"
+      - "worth investing"
+      - "best fund"
+      - "best funds"
+      - "best to invest"
+      - "best investment"
+      - "top fund"
+      - "top funds"
+      - "top scheme"
+      - "top schemes"
+      - "good fund"
+      - "good funds"
+      - "how to invest"
+      - "where should i"
+      - "where to invest"
+    response_template: |
+      I cannot provide investment advice or recommendations. 
+      For factual information about mutual funds, please refer to the official scheme page: {scheme_url}
+      Facts-only. No investment advice.
+    examples:
+      - "Should I invest in HDFC Equity Fund?"
+      - "Is this a good investment?"
+      - "Which fund should I choose?"
+
+  prediction:
+    description: "Queries asking for future performance or predictions"
+    patterns:
+      - "will it"
+      - "future"
+      - "predict"
+      - "expect"
+      - "forecast"
+      - "outlook"
+      - "projection"
+      - "next year"
+      - "tomorrow"
+      - "going to"
+    response_template: |
+      I cannot predict future performance or provide forecasts.
+      For current scheme facts and details, please refer to: {scheme_url}
+      Facts-only. No investment advice.
+    examples:
+      - "Will HDFC Equity Fund perform well next year?"
+      - "What is the future outlook?"
+      - "Predict the returns"
+
+  comparison:
+    description: "Queries comparing multiple funds or schemes"
+    patterns:
+      - "which is better"
+      - "compare"
+      - "vs"
+      - "difference between"
+      - "best among"
+      - "superior"
+      - "outperform"
+      - "higher returns"
+      - "lower risk"
+      - "best vs"
+    response_template: |
+      I cannot compare mutual funds or make performance judgments.
+      For detailed scheme information, please refer to the official pages: {scheme_url}
+      Facts-only. No investment advice.
+    examples:
+      - "Which is better: HDFC Equity vs HDFC Focused?"
+      - "Compare HDFC Mid Cap and HDFC Large Cap"
+      - "Which fund has higher returns?"
+
+
+  performance:
+    description: "Queries about returns, performance metrics, or historical data"
+    patterns:
+      - "returns"
+      - "performance"
+      - "past returns"
+      - "historical"
+      - "growth"
+      - "profit"
+      - "gain"
+      - "loss"
+      - "nav history"
+    response_template: |
+      I cannot calculate or compare performance metrics.
+      For official performance information, please refer to the scheme factsheet: {scheme_url}
+      Facts-only. No investment advice.
+    examples:
+      - "What are the returns of HDFC Mid Cap Fund?"
+      - "Show historical performance"
+      - "Calculate profit"
+
+  tax_guidance:
+    description: "Queries seeking tax advice or implications"
+    patterns:
+      - "tax saving"
+      - "tax benefit"
+      - "tax implication"
+      - "how much tax"
+      - "tax planning"
+      - "deduction"
+      - "tax advice"
+    response_template: |
+      I cannot provide tax advice or guidance.
+      For tax-related fund information, please refer to: {scheme_url}
+      Consult a tax professional for personalized advice.
+      Facts-only. No investment advice.
+    examples:
+      - "How much tax can I save with ELSS?"
+      - "What are the tax benefits?"
+      - "Tax planning advice"
+
+# Default educational URLs for different scheme types
+scheme_mapping:
+  hdfc_mid_cap: "https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth"
+  hdfc_equity: "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth"
+  hdfc_focused: "https://groww.in/mutual-funds/hdfc-focused-fund-direct-growth"
+  hdfc_elss: "https://groww.in/mutual-funds/hdfc-elss-tax-saver-fund-direct-plan-growth"
+  hdfc_large_cap: "https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth"
+
+# Default URL when no specific scheme is detected
+default_educational_url: "https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth"
+
+# Disclaimer for all refusal responses
+disclaimer: "Facts-only. No investment advice."
+
+# Configuration
+version: "1.0"
+created_at: "2026-05-12T00:00:00Z"
+description: "Refusal intents and responses for HDFC Mutual Fund FAQ Assistant"
+
+# Implementation Notes:
+# 1. Pattern matching should be case-insensitive
+# 2. Use regex patterns for flexible matching
+# 3. Scheme detection should map to appropriate educational URL
+# 4. Always include disclaimer in refusal responses
+# 5. Never provide off-corpus links (AMFI/SEBI/etc.)
+# 6. Educational link must be one of the 5 whitelisted URLs
