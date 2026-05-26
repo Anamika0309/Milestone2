@@ -265,8 +265,8 @@ with col2:
 st.markdown("##### 💡 Try a sample question")
 sample_cols = st.columns(4)
 sample_questions = [
-    "What is the exit load of HDFC Equity Fund?",
-    "What is the expense ratio of HDFC Mid Cap Fund?",
+    "What is the exit load of HDFC Flexi Cap Fund?",
+    "What is the expense ratio of HDFC Flexi Cap Fund?",
     "Is there a lock-in period for HDFC ELSS Tax Saver?",
     "What is the minimum investment for HDFC Large Cap Fund?",
 ]

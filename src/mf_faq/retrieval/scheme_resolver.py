@@ -55,18 +55,26 @@ class SchemeResolver:
                 aliases.add(name_parts[0].lower())
             
             # Add common abbreviations
-            if 'equity' in scheme_name.lower():
+            if 'equity' in scheme_name.lower() or 'flexi' in scheme_name.lower():
                 aliases.add('equity')
-            if 'mid cap' in scheme_name.lower():
+                aliases.add('flexi')
+                aliases.add('flexicap')
+                aliases.add('flexi cap')
+            if 'mid' in scheme_name.lower() or 'mid cap' in scheme_name.lower():
+                aliases.add('mid')
                 aliases.add('midcap')
-            if 'large cap' in scheme_name.lower():
+                aliases.add('mid cap')
+            if 'large' in scheme_name.lower() or 'large cap' in scheme_name.lower():
+                aliases.add('large')
                 aliases.add('largecap')
+                aliases.add('large cap')
             if 'focused' in scheme_name.lower():
                 aliases.add('focused')
-            if 'elss' in scheme_name.lower():
+            if 'elss' in scheme_name.lower() or 'tax' in scheme_name.lower():
                 aliases.add('elss')
-            if 'tax saver' in scheme_name.lower():
+                aliases.add('tax')
                 aliases.add('taxsaver')
+                aliases.add('tax saver')
             
             self.scheme_aliases[scheme_id] = aliases
             
