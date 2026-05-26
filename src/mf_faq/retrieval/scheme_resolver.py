@@ -101,6 +101,14 @@ class SchemeResolver:
                 if keyword in ["hdfc", "fund", "direct", "growth", "-", "plan"]:
                     continue
                 if keyword in query_lower:
+                    # Bug fix: If keyword is "equity" but it's part of "equity linked",
+                    # skip it so that ELSS queries don't misresolve to HDFC Equity
+                    if keyword == "equity" and "equity linked" in query_lower:
+                        occurrences = [m.start() for m in re.finditer(r'\bequity\b', query_lower)]
+                        linked_occurrences = [m.start() for m in re.finditer(r'\bequity linked\b', query_lower)]
+                        if len(occurrences) == len(linked_occurrences):
+                            continue
+
                     idx = query_lower.find(keyword)
                     if scheme_id not in scheme_first_index or idx < scheme_first_index[scheme_id]:
                         scheme_first_index[scheme_id] = idx
