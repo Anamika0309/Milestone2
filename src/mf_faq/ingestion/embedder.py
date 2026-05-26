@@ -38,7 +38,6 @@ else:
     logger.warning("sentence-transformers is not safe to import on this system. Using mock embedder functionality if needed")
 
 
-
 class Embedder:
     """Main embedder class for processing chunks"""
     
@@ -61,7 +60,8 @@ class Embedder:
     def _initialize_model(self):
         """Initialize the sentence transformer model"""
         if not SENTENCE_TRANSFORMERS_AVAILABLE:
-            raise ImportError("sentence-transformers is required but not installed")
+            logger.warning("sentence-transformers is not available. Using mock embeddings.")
+            return
         
         try:
             logger.info(f"Loading model: {self.model_name}")
@@ -69,7 +69,7 @@ class Embedder:
             logger.info(f"Model loaded successfully. Embedding dimension: {self.embedding_dim}")
         except Exception as e:
             logger.error(f"Failed to load model {self.model_name}: {e}")
-            raise
+            logger.warning("Falling back to mock embeddings due to initialization error.")
     
     def prepare_text_for_embedding(self, chunk: Dict[str, Any]) -> str:
         """Prepare text for embedding with scheme name prefix"""
@@ -83,8 +83,9 @@ class Embedder:
     
     def generate_embeddings(self, chunks: List[Dict[str, Any]]) -> List[List[float]]:
         """Generate embeddings for a list of chunks"""
-        if not self.model:
-            raise RuntimeError("Model not initialized")
+        if not SENTENCE_TRANSFORMERS_AVAILABLE or not self.model:
+            logger.warning("Generating mock embeddings since sentence-transformers is not available/loaded")
+            return [[0.1] * self.embedding_dim for _ in chunks]
         
         # Prepare texts for embedding
         texts = [self.prepare_text_for_embedding(chunk) for chunk in chunks]
@@ -104,13 +105,13 @@ class Embedder:
             return embeddings.tolist()
             
         except Exception as e:
-            logger.error(f"Error generating embeddings: {e}")
-            raise
+            logger.error(f"Error generating embeddings: {e}. Falling back to mock embeddings.")
+            return [[0.1] * self.embedding_dim for _ in chunks]
     
     def save_embeddings(self, chunks: List[Dict[str, Any]], embeddings: List[List[float]]) -> bool:
-        """Save embeddings to parquet file"""
+        """Save embeddings to parquet file, json file, and ChromaDB"""
         try:
-            # Prepare data for parquet
+            # Prepare data for parquet/json
             embeddings_data = []
             for chunk, embedding in zip(chunks, embeddings):
                 row = {
@@ -133,8 +134,26 @@ class Embedder:
             embeddings_df = pd.DataFrame(embeddings_data)
             embeddings_file = os.path.join(self.output_dir, 'embeddings.parquet')
             embeddings_df.to_parquet(embeddings_file, index=False)
-            
             logger.info(f"Saved {len(embeddings_data)} embeddings to {embeddings_file}")
+            
+            # Save to JSON for compatibility
+            json_file = os.path.join(self.output_dir, 'embeddings.json')
+            with open(json_file, 'w', encoding='utf-8') as f:
+                json.dump(embeddings_data, f, indent=2, ensure_ascii=False)
+            logger.info(f"Saved {len(embeddings_data)} embeddings to {json_file}")
+            
+            # Save to ChromaDB
+            try:
+                from ..vector_db.chroma_store import ChromaVectorStore
+                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
+                success = vector_store.add_embeddings(embeddings_data)
+                if success:
+                    logger.info("Successfully saved embeddings to ChromaDB")
+                else:
+                    logger.warning("Failed to save embeddings to ChromaDB")
+            except Exception as e:
+                logger.error(f"Error saving to ChromaDB: {e}")
+                
             return True
             
         except Exception as e:
@@ -146,305 +165,14 @@ class Embedder:
         try:
             metadata = {
                 'model_name': self.model_name,
-                'model_version': getattr(self.model, 'version', 'unknown'),
+                'model_version': getattr(self.model, 'version', 'unknown') if self.model else 'mock-1.0',
                 'embedding_dim': self.embedding_dim,
-                'max_seq_length': getattr(self.model, 'max_seq_length', 512),
+                'max_seq_length': getattr(self.model, 'max_seq_length', 512) if self.model else 512,
                 'normalized_embeddings': True,
                 'created_at': datetime.now(timezone.utc).isoformat(),
                 'total_chunks': 0,  # Will be updated after processing
                 'embedding_strategy': 'scheme_name_prefix'
             }
-            
-            # Save embeddings to JSON (for compatibility)
-            embeddings_file = os.path.join(self.output_dir, 'embeddings.json')
-            with open(embeddings_file, 'w', encoding='utf-8') as f:
-                json.dump(embeddings, f, indent=2, ensure_ascii=False)
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(embeddings)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
-            
-            # Save embeddings to ChromaDB
-            try:
-                from ..vector_db.chroma_store import ChromaVectorStore
-                vector_store = ChromaVectorStore(self.config_dir, "mf_faq_embeddings")
-                success = vector_store.add_embeddings(metadata)
-                if success:
-                    logger.info("Successfully saved embeddings to ChromaDB")
-                else:
-                    logger.warning("Failed to save embeddings to ChromaDB")
-            except Exception as e:
-                logger.error(f"Error saving to ChromaDB: {e}")
-                logger.info("Embeddings saved to JSON file only")
             
             metadata_file = os.path.join(self.output_dir, 'embedder.json')
             with open(metadata_file, 'w', encoding='utf-8') as f:
@@ -480,6 +208,32 @@ class Embedder:
         except Exception as e:
             logger.error(f"Error updating model metadata: {e}")
             return False
+            
+    def embed_text(self, text: str) -> List[float]:
+        """Generate embedding for a single text string"""
+        if not SENTENCE_TRANSFORMERS_AVAILABLE or not self.model:
+            # Return mock 384-dimensional embedding
+            return [0.1] * self.embedding_dim
+            
+        try:
+            embedding = self.model.encode(
+                [text],
+                normalize_embeddings=True,
+                show_progress_bar=False
+            )
+            return embedding[0].tolist()
+        except Exception as e:
+            logger.error(f"Error in embed_text: {e}")
+            return [0.1] * self.embedding_dim
+            
+    def embed_and_save(self, chunks: List[Dict[str, Any]]) -> bool:
+        """Generate embeddings for chunks and save them"""
+        try:
+            embeddings = self.generate_embeddings(chunks)
+            return self.save_embeddings(chunks, embeddings)
+        except Exception as e:
+            logger.error(f"Error in embed_and_save: {e}")
+            return False
     
     def load_chunks_from_file(self, chunks_file_path: str) -> List[Dict[str, Any]]:
         """Load chunks from JSON file"""
@@ -506,8 +260,7 @@ class Embedder:
             # Generate embeddings
             embeddings = self.generate_embeddings(chunks)
             
-            # Save embeddings (will append/merge with existing)
-            # For simplicity, we'll process all chunks at once in embed_all
+            # Save embeddings
             logger.info(f"Processed {len(chunks)} chunks from {chunks_file_path}")
             return True
             

@@ -255,7 +255,9 @@ class OrchestratorService:
         self._last_top_chunk_id = top_winner.get("chunk_id")
         
         # 8. Generation (Factual synthesis)
-        chunk_text = top_winner["text"]
+        # Combine top 3 chunks for richer context (keyword search may not always rank perfectly)
+        context_chunks = [c for c in reranked_candidates if c.get("chunk_id") != "fallback"][:3]
+        chunk_text = "\n\n---\n\n".join(c["text"] for c in context_chunks)
         scheme_id = top_winner["scheme_id"]
         scheme_url = self.scheme_mapping.get(scheme_id, self.whitelisted_urls[0])
         last_updated_date = top_winner.get("last_updated", "2026-05-12")
@@ -273,6 +275,19 @@ class OrchestratorService:
                 draft_answer = self._call_groq_completions(normalized_query, chunk_text, groq_api_key)
                 generation_mode = "groq"
                 logger.info("Successfully generated answer via Groq API")
+                
+                # If Groq says "I don't know" / refuses but we have a high-confidence chunk,
+                # fall back to extractive instead of giving up
+                refusal_phrases = [
+                    "don't know", "do not know", "not enough information",
+                    "does not contain", "cannot find", "no information",
+                    "not available in", "unable to find", "not mentioned",
+                    "not provided in", "context doesn't", "context does not"
+                ]
+                if any(phrase in draft_answer.lower() for phrase in refusal_phrases):
+                    logger.warning("Groq returned a refusal but chunk has high confidence. Falling back to extractive.")
+                    draft_answer = self._generate_extractive(chunk_text)
+                    generation_mode = "extractive_fallback"
             except Exception as e:
                 logger.error(f"Groq generation failed ({e}). Falling back to extractive.")
                 draft_answer = self._generate_extractive(chunk_text)

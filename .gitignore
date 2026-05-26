@@ -28,6 +28,7 @@ data/index/*.faiss
 data/index/*.pkl
 data/index/*.parquet
 src/data/index/*.faiss
+src/data/index/*.parquet
 src/data/index/sparse_index.pkl
 # NOTE: embeddings.json is NOT ignored — it is required for Streamlit Cloud deployment
 
@@ -47,6 +48,11 @@ import_v.txt
 torch_test.txt
 datasets_v.txt
 utils_v.txt
+debug_chunks.py
+debug_find_expense.py
+debug_multi.py
+debug_pii.py
+debug_streamlit.py
 
 # --------------- Node.js / Vercel ---------------
 node_modules/

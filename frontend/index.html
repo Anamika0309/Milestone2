@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GROWWW Mutual Fund RAG Assistant - Premium objective, facts-only dashboard for HDFC Mutual Funds. Deflecting advice, securing PII, and displaying accurate exit loads and expense ratios.">
+    <title>GROWWW - HDFC Mutual Fund RAG Assistant Dashboard</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Floating Ambient Background Gradients -->
+        <div class="gradient-glow glow-1"></div>
+        <div class="gradient-glow glow-2"></div>
+
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-logo">
+                <span class="logo-symbol">📈</span>
+                <div class="logo-text">
+                    <span class="logo-brand">GROWWW</span>
+                    <span class="logo-subtitle">Mutual Fund Hub</span>
+                </div>
+            </div>
+            <div class="header-status">
+                <span class="status-dot animate-pulse"></span>
+                <span class="status-text">RAG Engine Online</span>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <span class="hero-badge">Facts-Only Mutual Fund Assistant</span>
+            <h1 class="hero-title">Secure. Objective. <span class="highlight-text">Factual.</span></h1>
+            <p class="hero-desc">
+                Explore the official whitelisted HDFC Mutual Fund schemes. Our closed-corpus RAG technology ensures 100% compliance with zero hallucinations, strict PII privacy shielding, and instant deflection of subjective or speculative advice.
+            </p>
+            <div class="hero-actions">
+                <a href="#schemes" class="btn-secondary">Explore Schemes</a>
+                <a href="https://share.streamlit.io/" id="launchChatbotBtn" target="_blank" class="btn-primary">
+                    Launch AI Chatbot 
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </a>
+            </div>
+        </section>
+
+        <!-- Compliance & Security Badges -->
+        <section class="security-grid">
+            <div class="security-card">
+                <div class="card-icon">🔒</div>
+                <h3>Closed Corpus Ingestion</h3>
+                <p>Only the 5 whitelisted Groww scheme pages are ever ingested or queried. Zero web pollution.</p>
+            </div>
+            <div class="security-card">
+                <div class="card-icon">🛡️</div>
+                <h3>Privacy Shield (PII Guard)</h3>
+                <p>Indian PII like PAN cards, Aadhaar numbers, phones, and emails are instantly blocked and redacted.</p>
+            </div>
+            <div class="security-card">
+                <div class="card-icon">⚖️</div>
+                <h3>Advice Deflection Gate</h3>
+                <p>Subjective comparisons, market predictions, and investment advice are deflected to canned refusals.</p>
+            </div>
+        </section>
+
+        <!-- Schemes Section -->
+        <section id="schemes" class="schemes-section">
+            <div class="section-header">
+                <h2>Whitelisted HDFC Schemes</h2>
+                <p>The locked registry of HDFC Mutual Fund plans validated by the ingestion controller.</p>
+            </div>
+
+            <div class="schemes-grid">
+                <!-- Scheme 1 -->
+                <div class="scheme-card" style="--card-index: 1;">
+                    <div class="scheme-category">Mid Cap opportunities</div>
+                    <h3>HDFC Mid-Cap Opportunities Fund</h3>
+                    <div class="scheme-meta">
+                        <div class="meta-row"><span>Expense Ratio:</span> <strong>0.78%</strong></div>
+                        <div class="meta-row"><span>Exit Load:</span> <strong>1.0% (<= 1 year)</strong></div>
+                        <div class="meta-row"><span>Min SIP:</span> <strong>₹100</strong></div>
+                        <div class="meta-row"><span>Risk Profile:</span> <strong class="risk-badge">Very High</strong></div>
+                    </div>
+                    <a href="https://groww.in/mutual-funds/hdfc-mid-cap-fund-direct-growth" target="_blank" class="card-link">View Growth Plan ↗</a>
+                </div>
+
+                <!-- Scheme 2 -->
+                <div class="scheme-card" style="--card-index: 2;">
+                    <div class="scheme-category">Flexi Cap opportunities</div>
+                    <h3>HDFC Flexi Cap Fund</h3>
+                    <div class="scheme-meta">
+                        <div class="meta-row"><span>Expense Ratio:</span> <strong>0.76%</strong></div>
+                        <div class="meta-row"><span>Exit Load:</span> <strong>1.0% (<= 1 year)</strong></div>
+                        <div class="meta-row"><span>Min SIP:</span> <strong>₹100</strong></div>
+                        <div class="meta-row"><span>Risk Profile:</span> <strong class="risk-badge">Very High</strong></div>
+                    </div>
+                    <a href="https://groww.in/mutual-funds/hdfc-equity-fund-direct-growth" target="_blank" class="card-link">View Growth Plan ↗</a>
+                </div>
+
+                <!-- Scheme 3 -->
+                <div class="scheme-card" style="--card-index: 3;">
+                    <div class="scheme-category">Focused opportunities</div>
+                    <h3>HDFC Focused 30 Fund</h3>
+                    <div class="scheme-meta">
+                        <div class="meta-row"><span>Expense Ratio:</span> <strong>0.92%</strong></div>
+                        <div class="meta-row"><span>Exit Load:</span> <strong>1.0% (<= 1 year)</strong></div>
+                        <div class="meta-row"><span>Min SIP:</span> <strong>₹100</strong></div>
+                        <div class="meta-row"><span>Risk Profile:</span> <strong class="risk-badge">Very High</strong></div>
+                    </div>
+                    <a href="https://groww.in/mutual-funds/hdfc-focused-fund-direct-growth" target="_blank" class="card-link">View Growth Plan ↗</a>
+                </div>
+
+                <!-- Scheme 4 -->
+                <div class="scheme-card" style="--card-index: 4;">
+                    <div class="scheme-category">ELSS Tax Saver</div>
+                    <h3>HDFC ELSS Tax Saver Fund</h3>
+                    <div class="scheme-meta">
+                        <div class="meta-row"><span>Expense Ratio:</span> <strong>1.12%</strong></div>
+                        <div class="meta-row"><span>Exit Load:</span> <strong>0% (3-Yr Lock-in)</strong></div>
+                        <div class="meta-row"><span>Min SIP:</span> <strong>₹500</strong></div>
+                        <div class="meta-row"><span>Risk Profile:</span> <strong class="risk-badge">Very High</strong></div>
+                    </div>
+                    <a href="https://groww.in/mutual-funds/hdfc-elss-tax-saver-fund-direct-plan-growth" target="_blank" class="card-link">View Growth Plan ↗</a>
+                </div>
+
+                <!-- Scheme 5 -->
+                <div class="scheme-card" style="--card-index: 5;">
+                    <div class="scheme-category">Large Cap opportunities</div>
+                    <h3>HDFC Large Cap Fund</h3>
+                    <div class="scheme-meta">
+                        <div class="meta-row"><span>Expense Ratio:</span> <strong>0.85%</strong></div>
+                        <div class="meta-row"><span>Exit Load:</span> <strong>1.0% (<= 1 year)</strong></div>
+                        <div class="meta-row"><span>Min SIP:</span> <strong>₹100</strong></div>
+                        <div class="meta-row"><span>Risk Profile:</span> <strong class="risk-badge">Very High</strong></div>
+                    </div>
+                    <a href="https://groww.in/mutual-funds/hdfc-large-cap-fund-direct-growth" target="_blank" class="card-link">View Growth Plan ↗</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p class="disclaimer-text">
+                ⚠️ <strong>Regulatory Disclaimer:</strong> Facts-only Mutual Fund RAG Assistant. We do not provide investment advice, financial planning, or speculative projections. All data points are retrieved directly from whitelisted Groww.in fund documents.
+            </p>
+            <p class="copyright-text">
+                &copy; 2026 GROWWW. Powered by Streamlit Backend & Vercel Edge.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Script to set the dynamic Streamlit URL if configured -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Easily customizable deployed Streamlit URL
+            const STREAMLIT_URL = "https://anamika0309-milestone2-streamlit-app.streamlit.app/";
+            const launchBtn = document.getElementById("launchChatbotBtn");
+            if (launchBtn && STREAMLIT_URL) {
+                launchBtn.href = STREAMLIT_URL;
+            }
+        });
+    </script>
+</body>
+</html>

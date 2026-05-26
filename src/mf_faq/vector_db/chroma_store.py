@@ -198,6 +198,23 @@ class ChromaVectorStore:
                     words = re.findall(r'\b\w+\b', query_text.lower())
                     query_words = set(words)
                 
+                # Boilerplate indicators — chunks with these are navigation junk, not financial data
+                boilerplate_signals = [
+                    'stock screener', 'demat account', 'ipo', 'intraday',
+                    'etf screener', 'mtfs', 'buy now, pay later', 'track upcoming',
+                    'begin your stock market', 'filter based on rsi',
+                    'dividends, bonus, buybacks', 'share market today',
+                    'intradaymonitor', 'stocksinvest in stocks'
+                ]
+                
+                # Financial data indicators — chunks with these contain real answers
+                financial_signals = [
+                    r'\d+\.\d+%', r'expense ratio', r'exit load', r'lock.?in',
+                    r'minimum.*(?:investment|sip|lumpsum)', r'nav', r'aum',
+                    r'fund size', r'benchmark', r'fund manager',
+                    r'₹\s*[\d,]+', r'\d+\s*(?:lakh|crore|cr)'
+                ]
+                
                 candidates = []
                 for chunk_id, chunk in self.mock_embeddings.items():
                     # 1. Cosine similarity (dot product of normalized embeddings)
@@ -223,13 +240,48 @@ class ChromaVectorStore:
                         if len(query_words) > 0:
                             keyword_score = match_count / (len(query_words) + 5)
                     
+                    # 3. Content quality scoring — penalize boilerplate, boost financial data
+                    quality_bonus = 0.0
+                    
+                    # Penalize boilerplate navigation text
+                    boilerplate_count = sum(1 for sig in boilerplate_signals if sig in chunk_text_lower)
+                    if boilerplate_count >= 2:
+                        quality_bonus -= 0.25  # Heavy penalty for nav junk
+                    elif boilerplate_count == 1:
+                        quality_bonus -= 0.10
+                    
+                    # Boost chunks with actual financial data
+                    financial_count = sum(1 for sig in financial_signals if re.search(sig, chunk_text_lower))
+                    if financial_count >= 3:
+                        quality_bonus += 0.15  # Strong boost for data-rich chunks
+                    elif financial_count >= 1:
+                        quality_bonus += 0.08
+                    
+                    # 4. Direct-answer metric boost — boost chunks that literally contain
+                    #    the metric value being asked about
+                    if query_text:
+                        query_lower = query_text.lower()
+                        metric_patterns = {
+                            'expense ratio': r'expense\s*ratio\s*[\d.]+%',
+                            'exit load': r'exit\s*load.*?(?:\d+%|nil)',
+                            'minimum': r'(?:minimum|min).*?(?:investment|sip|lumpsum).*?₹?\s*[\d,]+',
+                            'lock in': r'lock[\s-]*in.*?\d+',
+                            'nav': r'nav.*?₹?\s*[\d,.]+',
+                            'aum': r'(?:aum|fund\s*size).*?₹?\s*[\d,.]+',
+                            'benchmark': r'benchmark.*?(?:nifty|sensex|bse)',
+                        }
+                        for metric_key, metric_re in metric_patterns.items():
+                            if metric_key in query_lower:
+                                if re.search(metric_re, chunk_text_lower):
+                                    quality_bonus += 0.12  # Strong boost for direct answer
+                    
                     # Combine dense and keyword scores
                     if is_dense_valid:
-                        combined_score = 0.7 * dense_score + 0.3 * keyword_score
+                        combined_score = 0.7 * dense_score + 0.3 * keyword_score + quality_bonus
                     else:
                         # Normalize/scale keyword score to pass the confidence gate for relevant matches
                         if keyword_score > 0.0:
-                            combined_score = 0.75 + (min(1.0, keyword_score) * 0.15)
+                            combined_score = 0.75 + (min(1.0, keyword_score) * 0.15) + quality_bonus
                         else:
                             combined_score = 0.0
                     

@@ -26,14 +26,17 @@ class GroqGenerator:
         
         system_prompt = (
             "You are a highly compliant factual assistant for HDFC Mutual Fund.\n"
-            "Your task is to answer the user question using ONLY the facts present in the retrieved context chunk.\n\n"
+            "Your task is to answer the user question using ONLY the facts present in the retrieved context chunk.\n"
+            "The context is scraped from Groww.in and may contain raw text with mixed sections, tables, and numbers.\n\n"
             "Instructions:\n"
-            "1. Your answer must be strictly facts-only, objective, and fully grounded in the context chunk.\n"
-            "2. Do not include any investment advice, suggestions, or recommendations (e.g., do not say 'you should invest' or 'this fund is better').\n"
-            "3. Your response must consist of AT MOST 3 sentences.\n"
-            "4. Do not include any URLs or links in your response.\n"
-            "5. If the context does not contain the answer, reply with 'I don't know'.\n"
-            "6. Make sure to represent numerical facts exactly as written."
+            "1. Extract and present relevant factual information from the context. Look for numbers, percentages, dates, and financial terms.\n"
+            "2. Your answer must be strictly facts-only, objective, and fully grounded in the context chunk.\n"
+            "3. Do not include any investment advice, suggestions, or recommendations.\n"
+            "4. Your response must consist of AT MOST 3 sentences.\n"
+            "5. Do not include any URLs or links in your response.\n"
+            "6. Represent numerical facts exactly as written in the context.\n"
+            "7. If the context contains ANY relevant information about the topic asked, use it to answer.\n"
+            "8. Only say 'The context does not contain this information' if absolutely nothing relevant exists in the context."
         )
         
         payload = {

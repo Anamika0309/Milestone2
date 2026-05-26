@@ -53,8 +53,22 @@ class CompliancePostProcessor:
         else:
             factual_body = " ".join(sentences)
 
-        # 3. Defensive PII Scan on output
-        if self.pii_guard.detect(factual_body):
+        # 3. Defensive PII Scan on output — only block for real user PII
+        # (Skip address/name patterns which cause false positives on scraped fund data)
+        high_risk_pii_detected = False
+        for pat in self.pii_guard.patterns:
+            if pat["category"] in ("pan", "aadhaar", "phone", "email", "otp", "bank_account"):
+                import re as _re
+                if pat["regex"].search(factual_body):
+                    ctx = pat.get("context_patterns", [])
+                    if ctx:
+                        if any(kw.lower() in factual_body.lower() for kw in ctx):
+                            high_risk_pii_detected = True
+                            break
+                    else:
+                        high_risk_pii_detected = True
+                        break
+        if high_risk_pii_detected:
             logger.error("PII leakage detected in generated draft response! Aborting and returning zero-URL PII block.")
             return self.pii_guard.pii_block_response.strip(), False
 
