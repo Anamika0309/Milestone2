@@ -14,10 +14,24 @@ try:
     import chromadb
     from chromadb.config import Settings
     from chromadb.utils import embedding_functions
-    CHROMADB_AVAILABLE = True
+    
+    # Check if sentence-transformers is safe and available
+    # to avoid dense vector searches with dummy [0.1]*384 query embeddings
+    from ..utils.import_utils import is_library_safe
+    if is_library_safe("sentence_transformers"):
+        try:
+            import sentence_transformers
+            CHROMADB_AVAILABLE = True
+        except ImportError:
+            CHROMADB_AVAILABLE = False
+            logging.warning("sentence-transformers not available. Forcing mock vector store for high-fidelity keyword retrieval.")
+    else:
+        CHROMADB_AVAILABLE = False
+        logging.warning("sentence-transformers is not safe to import on this system. Forcing mock vector store for high-fidelity keyword retrieval.")
 except ImportError:
     CHROMADB_AVAILABLE = False
     logging.warning("ChromaDB not available. Using mock vector store")
+
 
 
 logger = logging.getLogger(__name__)
