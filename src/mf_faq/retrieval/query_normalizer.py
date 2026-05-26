@@ -56,6 +56,9 @@ class QueryNormalizer:
         # Lowercase
         normalized = normalized.lower()
         
+        # Replace hyphens with spaces to match both mid-cap and mid cap
+        normalized = normalized.replace('-', ' ')
+        
         # Collapse whitespace
         normalized = re.sub(r'\s+', ' ', normalized)
         
